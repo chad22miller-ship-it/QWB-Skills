@@ -1,0 +1,15 @@
+{
+    "name": "QWB Skills Marketplace",
+    "owner": "chad22miller-ship-it",
+    "description": "Shared skills for QWB team",
+    "plugins": [
+          {
+                  "name": "prospect-finder",
+                  "source": "./skills/prospect-finder.skill"
+          },
+          {
+                  "name": "sales-trainer",
+                  "source": "./skills/sales-trainer.skill"
+          }
+    ]
+}
