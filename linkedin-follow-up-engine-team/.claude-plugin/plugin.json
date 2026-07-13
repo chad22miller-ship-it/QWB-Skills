@@ -1,0 +1,5 @@
+{
+  "name": "linkedin-follow-up-engine-team",
+  "version": "1.0.0",
+  "description": "QWB pipeline brain — reads the rep's Prospects tracker and drafts the exact next follow-up to move each prospect from found to Client via the CCQTTC drip."
+}
