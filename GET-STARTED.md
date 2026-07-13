@@ -4,17 +4,21 @@ Everything you need to go from zero to running your pipeline. About 5 minutes. D
 
 ---
 
-## Step 1 — Install the skills (this part auto-runs)
+## Step 1 — Install the skills (about a minute in Cowork)
 
-Open Claude and paste these three lines, one at a time. Each one runs itself.
+1. Open **Cowork**. In the left sidebar, click **Customize**, then open the **Plugins** tab.
+2. In the **Personal plugins** section, click the **+** button and choose **Add marketplace**.
+3. Pick **Add from a repository**, paste this, and add it:
 
-```
-/plugin marketplace add chad22miller-ship-it/qwb-skills
-/plugin install prospect-finder-team@qwb-skills
-/plugin install linkedin-follow-up-engine-team@qwb-skills
-```
+   ```
+   https://github.com/chad22miller-ship-it/qwb-skills
+   ```
 
-Done. Both skills are installed and load automatically.
+4. Back in the Plugins list, click **Install** on both:
+   - **prospect-finder-team**
+   - **linkedin-follow-up-engine-team**
+
+That's it. The skills load automatically. (Using Claude Code in a terminal instead? See the bottom of this page.)
 
 ---
 
@@ -70,5 +74,17 @@ Just talk to Claude naturally:
 ## Stuck?
 
 Message Chad.
+
+---
+
+### Using Claude Code in a terminal instead of Cowork?
+
+Paste these one at a time:
+
+```
+/plugin marketplace add chad22miller-ship-it/qwb-skills
+/plugin install prospect-finder-team@qwb-skills
+/plugin install linkedin-follow-up-engine-team@qwb-skills
+```
 
 *Maintained by chad22miller-ship-it for the QWB team.*

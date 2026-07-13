@@ -16,7 +16,15 @@ Your pipeline brain. It reads your Prospects tracker, finds everyone who is due 
 
 ## Install
 
-Open Claude and run these one at a time:
+**In Cowork (what most reps use):** open **Customize → Plugins**, click the **+** and choose **Add marketplace**, pick **Add from a repository**, and paste:
+
+```
+https://github.com/chad22miller-ship-it/qwb-skills
+```
+
+Then click **Install** on **prospect-finder-team** and **linkedin-follow-up-engine-team**. Full walkthrough in [GET-STARTED.md](GET-STARTED.md).
+
+**In Claude Code (terminal):** run these one at a time:
 
 ```
 /plugin marketplace add chad22miller-ship-it/qwb-skills
@@ -24,7 +32,7 @@ Open Claude and run these one at a time:
 /plugin install linkedin-follow-up-engine-team@qwb-skills
 ```
 
-The first line connects you to the marketplace. The next two install the skills. That is it. They load automatically, so you can start right away.
+Either way, the skills load automatically once installed.
 
 ## How to use them
 
