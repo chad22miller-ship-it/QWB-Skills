@@ -1,15 +1,19 @@
 {
-    "name": "QWB Skills Marketplace",
-    "owner": "chad22miller-ship-it",
-    "description": "Shared skills for QWB team",
-    "plugins": [
-          {
-                  "name": "prospect-finder",
-                  "source": "./skills/prospect-finder.skill"
-          },
-          {
-                  "name": "sales-trainer",
-                  "source": "./skills/sales-trainer.skill"
-          }
-    ]
+  "name": "qwb-skills",
+  "owner": {
+    "name": "chad22miller-ship-it"
+  },
+  "description": "Shared skills for the QWB team",
+  "plugins": [
+    {
+      "name": "prospect-finder-team",
+      "source": "./skills/prospect-finder-team",
+      "description": "QWB prospecting engine — finds and triages new LinkedIn Sales Navigator leads, scores each STRONG/MAYBE/SKIP, drafts connection notes, and logs the strong ones to the rep's own tracker."
+    },
+    {
+      "name": "linkedin-follow-up-engine-team",
+      "source": "./skills/linkedin-follow-up-engine-team",
+      "description": "QWB pipeline brain — reads the rep's Prospects tracker, finds who's due at every stage, and drafts the exact next follow-up to move each prospect from found to Client via the CCQTTC drip."
+    }
+  ]
 }
