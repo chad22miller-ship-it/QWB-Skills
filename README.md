@@ -2,6 +2,8 @@
 
 Shared Claude skills for the QWB team. Install them once and your Claude runs the pipeline the way we actually work it: find the right people, score them, and know exactly who to follow up with and what to say.
 
+**New rep? Start here → [GET-STARTED.md](GET-STARTED.md).** Install plus full setup in about 5 minutes.
+
 ## What's inside
 
 ### prospect-finder-team
