@@ -24,11 +24,11 @@ That's it. The skills load automatically. (Using Claude Code in a terminal inste
 
 ## Step 2 — Get your own tracker
 
-The skills run on YOUR own copy of the QWB Command Center tracker. One rep, one tracker. Never share one with another rep.
+The skills run on YOUR own copy of the QWB Command Center tracker. One rep, one tracker — never run off a shared sheet, or your pipelines collide.
 
-Make your copy here: **[ Chad: paste your tracker template share link ]**
+**Make your own copy in one click:** https://docs.google.com/spreadsheets/d/1NKLx5k5_PpHyyinaIK0LwllMXDPYueU95PvIOVqDpdQ/copy
 
-Then in the sheet: File → Make a copy. Keep the three tabs as they are. The Prospects tab is your command center; the dashboard fills itself.
+Click the link, hit **Make a copy**, and it's yours. Keep the three tabs as they are — the Prospects tab is your command center, and the dashboard fills itself.
 
 ---
 
