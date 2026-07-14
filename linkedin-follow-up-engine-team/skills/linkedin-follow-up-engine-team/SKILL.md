@@ -40,17 +40,20 @@ video is a bridge or a fallback, nothing more.
 
 ## What this engine NEVER does (non-negotiable)
 
-- Never sends a message, connection request, or withdraw. the rep's hands, every time.
+- Never sends a message, connection request, or withdraw. The rep's hands, every time.
 - Never opens a profile to tee up a connect, never pre-fills a note into LinkedIn's UI,
   never positions a cursor over a Connect or Send button. The connect stage is pure chat:
   you hand the rep the name, link, and note; they do everything on LinkedIn themselves.
 - Never writes on the Pipeline board or the Settings tab. Prospects rows only.
 - The ONLY LinkedIn surfaces you touch are **read-only checks**: messaging, the regular inbox AND the Sales Navigator
   inbox (`linkedin.com/sales/inbox/`) as a fallback, to verify sends and replies, and the sent-invitations page
-  (`linkedin.com/mynetwork/invitation-manager/sent/`) for the accept sweep. A
+  (`linkedin.com/mynetwork/invitation-manager/sent/`) for the reconciliation sweep. A
   people-search results page is allowed only to confirm a degree (1st vs 2nd) when an
   invite has vanished from pending. Open a profile only if none of those can resolve a
   question, and say so first.
+- Never adds a person to the tracker on your own initiative. If real LinkedIn activity
+  turns up someone who isn't in the Prospects tab, flag it and ask the rep first, every
+  time, no matter how obvious it seems the row belongs there.
 
 ---
 
@@ -79,6 +82,13 @@ video is a bridge or a fallback, nothing more.
   exactly two places: the Silence A fallback and the pre-Zoom bridge. Whenever a draft
   involves sending the video, hand the rep this link right next to the message so they paste
   both in one motion.
+- **TEAM_WAVE_FOLDER:** the shared **"QWB Prospect Finder - Team Skill"** Drive folder,
+  id `13IhV_Ioh-HVpuaWaEd9m1YheRfpfOVz7`. Every rep's wave files land here — the folder is
+  shared across the team, so tag every filename with the rep's name (see **Tracker
+  access** below) so the right person's bound script picks up the right file. Each rep's
+  tracker copy already has the **QWB Tools -> Import newest wave** bound script installed;
+  if a rep's copy doesn't have it yet, flag that to them before relying on this path and
+  fall back to the Engine Inbox tab in the meantime.
 
 ---
 
@@ -131,6 +141,7 @@ each person due:
      any Sales-Nav-sourced lead (profile URL contains `/sales/lead/`), lives only in that
      inbox. For those leads, look there FIRST. Never report "not sent" or "no reply" until
      BOTH inboxes have been checked.
+   - **Shortcut — the Channel column.** If your tracker carries a **Channel** column (the bound script adds it: `Sales Nav` when the Profile URL contains `/sales/lead/`, else `LinkedIn`), read it to know which inbox to open first. No Channel column yet? Derive the same signal from the URL. Either way, never conclude "not sent" until both inboxes have been checked.
 4. **Advance on what messaging shows**, not on what anyone remembers:
    - **Sent, no reply yet** → that step's status; Date of Last Touch = today; Next
      Follow-Up = the step's interval.
@@ -141,10 +152,11 @@ each person due:
    step 3) — a fresh "thanks for connecting" thread in messaging also proves an accept,
    and the rep naming who accepted works too.
 
-Then **write the advance straight into that person's row** in the Prospects tab and tell
-the rep exactly what changed, using the proven write path in **Tracker access** below and
-verifying every write by readback. **Last resort:** if no write path exists at all, hand
-the rep the cells to paste and say you couldn't write directly.
+Then **record the advance for that person's row** by adding it to this run's wave file
+(the Drive import in **Tracker access** below), tell the rep exactly what changed, and
+verify every write by gviz readback after they run the import. **Last resort:** if the
+import is unavailable, hand the rep the exact cells to paste and say so. Never improvise
+blind cell-by-cell writes.
 
 ---
 
@@ -180,19 +192,45 @@ staged-but-not-yet-sent so nothing downstream mistakes it for a completed send.
 2. **Connect queue (Stage 1).** Every row at `Identified` with a non-blank note is ready
    to invite. Count today's `Connection Sent` flips first; never queue past the cap (25/day;
    10/day for accounts under 2 weeks).
-3. **Accept sweep (read-only, in the browser).** Open the sent-invitations page and
-   cross-reference every `Connection Sent` row against what is actually pending:
-   - **Tracked invite missing from pending** → check the degree on a people-search
-     results page. 1st degree = accepted → flip to `Connected`, Next Follow-Up = today,
-     Step 2 due now. 2nd degree with the invite gone = they ignored or declined →
-     `Withdrawn`, clear Next Follow-Up, note what you saw. Cheapest no in the business;
-     move on.
+3. **Full reconciliation sweep (read-only, in the browser) — every run, standard, not a
+   special deeper pass.** Reps work LinkedIn by hand between runs, often faster than the
+   sheet gets updated, so a spot-check of just the `Connection Sent` bucket misses real
+   activity sitting live in their threads. Every run, reconcile the whole active pipeline
+   against LinkedIn before trusting anything the tracker's due list says:
+   - **Paginate, don't skim.** Scroll/load-more on the sent-invitations page until every
+     pending invite is loaded (not just the first ~10), and do the same on the regular
+     LinkedIn Messaging inbox and the Sales Navigator inbox until you've covered recent
+     activity, not just the first screen. A name sitting one "load more" click away is
+     just as real as one already on screen.
+   - **Cross-reference every name you find against every active tracker row** —
+     `Identified`, `Connection Sent`, `Connected`, `Msg 1 Sent`, `Msg 2 Sent` — not only
+     the rows already flagged due. The point is to catch a mismatch here, before it
+     surfaces later as a wrong due-list entry or, worse, never surfaces at all.
+   - **Verify before you write, every time.** For any mismatch, confirm the true state
+     before touching the row: a people-search degree check (1st = accepted; 2nd degree
+     with the invite gone from pending = ignored or declined) or reading the actual
+     thread content top to bottom, not just the list preview, to see how far the real
+     conversation has actually gone.
+   - **Tracked invite missing from pending** → 1st degree = accepted → flip to
+     `Connected`, Next Follow-Up = today, Step 2 due now. 2nd degree with the invite gone
+     = ignored or declined → `Withdrawn`, clear Next Follow-Up, note what you saw.
+     Cheapest no in the business; move on.
    - **Untracked invite found in pending** (an `Identified` row sitting in the pending
-     list because the rep sent it by hand between runs) → flip it to `Connection Sent` with
-     the REAL send date from the page, Next Follow-Up = send date + 14, and note that
-     the tracker was caught up after the fact.
-   - **Count today's sends from the page, tracked or not** — off-tracker invites still
-     spend the daily cap. A fresh "thanks for connecting" thread in messaging also
+     list because the rep sent it by hand between runs) → flip it to `Connection Sent`
+     with the REAL send date from the page, Next Follow-Up = send date + 14, and note
+     that the tracker was caught up after the fact.
+   - **A tracked row frozen behind a live conversation** (still showing `Identified` or
+     `Connected` while the real thread already ran through Step 2, Step 3, a Lane pitch,
+     a call-time offer, or further) → read the whole thread, backfill what actually
+     happened into notes, and place them at whatever stage the conversation has truly
+     reached. Never leave someone parked at a stage the sheet just happened to freeze at.
+   - **Real LinkedIn activity involving someone who isn't in the tracker at all** → never
+     add them yourself. Flag the name and what you saw in the thread, and ask the rep if
+     they want them added and at what stage, before writing a single cell. This is the
+     one rule with zero exceptions: Claude flags, the rep decides, Claude writes it in
+     only after the rep confirms.
+   - **Count today's sends from the pending page, tracked or not** — off-tracker invites
+     still spend the daily cap. A fresh "thanks for connecting" thread in messaging also
      proves an accept, and the rep naming who accepted still works.
 4. **Withdraw check.** Any `Connection Sent` row whose Date of Last Touch is 14+ days ago gets a
    withdraw instruction (Stage 1 rules below).
@@ -206,7 +244,9 @@ staged-but-not-yet-sent so nothing downstream mistakes it for a completed send.
    **Stage every draft into the tracker** (section below) so the board carries the
    copy-paste text, then deliver the send list in chat.
 8. **After the rep sends, run the verify-then-advance loop** before moving anyone.
-9. Close with the **run summary**.
+9. Close with the **run summary**, and call out anything found in step 3 that's still
+   waiting on the rep's answer (untracked people flagged, ambiguous rows, anything that
+   didn't cleanly fit the stage machine).
 
 ---
 
@@ -472,7 +512,7 @@ not harvesting every month. You're watering. Keep sowing and watering seeds.
 
 ## LinkedIn safety fence (keeps the account alive)
 
-- A human sends every message, every invite, every withdraw. the rep's hands. No exceptions.
+- A human sends every message, every invite, every withdraw. The rep's hands. No exceptions.
 - Never touch an "Export from Search / Export to Googlesheet" button — that's a scraper
   and a fast ban.
 - No bulk profile opening. Verify in **messaging**; open a profile only if messaging
@@ -500,54 +540,97 @@ not harvesting every month. You're watering. Keep sowing and watering seeds.
 
 ## Stage every draft into the tracker (the board is where the rep works)
 
-Whenever a draft is produced — because a status changed, a reply came in, or a silence
-play fired — WRITE it into that row's staging column in the same run, before waiting for
-the rep:
+Whenever a draft is produced, because a status changed, a reply came in, or a silence
+play fired, put it in this run's **wave file** (see Tracker access below) in the right
+column so that after the import the board carries the copy-paste text next to the
+person's name:
 
-- Step 2 (Converse) and its nudge → **Message 1 (Touch 2) Text** (column P)
-- Step 3 (Qualify + Transition) and the Voss question → **Touch 3 (Bridge Ask) Text**
-- Step 4 (Lane A/B, the 15-min-call booking time-offer, and the Silence A video offer) → **Stage 4 Next-Move Text** (column AE). The board's Stage 4 card reads this column, so the full message shows on the card just like Steps 2 and 3. Write it as a normal cell write and let the board's own refresh display it; do NOT write the cell and force a re-render in the same breath (a freshly-added column can read back empty if you do).
-- Later steps → the matching text column if the tracker has one; if it doesn't, the chat
-  send list carries it alone
+- Step 2 (Converse) and its nudge -> **Message 1 (Touch 2) Text** (column P)
+- Step 3 (Qualify + Transition) and the Voss question -> **Touch 3 (Bridge Ask) Text** (column S, if the rep's copy has it — some earlier tracker copies don't; if the column is missing, fold the draft into the chat send list instead of forcing a write)
+- Step 4 (Lane A/B, the 15-min-call booking time-offer, the Silence A video offer) ->
+  **Stage 4 Next-Move Text** (column AE)
+- Later steps -> the matching text column if the tracker has one; otherwise the chat send
+  list carries it
 
-The board displays these columns, so the copy-paste text sits right next to the person's
-name and the rep can work off the board even hours after the run. Verify the cell landed by
-readback before calling it staged. Staging supplements the chat send list, never replaces
-it — the send list is still delivered every run, warmest people first.
+Every staged row carries the person's **Profile URL** as the match key. After the rep runs
+the import, verify the cell landed by gviz readback before calling it staged. Staging
+supplements the chat send list, never replaces it — the send list is still delivered every
+run, warmest people first.
 
 ---
 
 ## Tracker access — the proven read and write paths (hard-won; don't improvise)
 
-**READ:** open the tracker in a browser tab, then fetch the CSV in page context
-(javascript) using the signed-in session:
+**READ (gviz, unchanged and reliable):** open the tracker in a browser tab, then fetch the
+CSV in page context (javascript) using the signed-in session:
 `https://docs.google.com/spreadsheets/d/<SHEET_ID>/gviz/tq?tqx=out:csv&sheet=Prospects`
 — append `&range=A5:M15` for slices and a cache-buster like `&_cb=<timestamp>` so you
 never read stale data. This returns the real Prospects tab. The Google Drive connector
 renders only the board tab and cannot write cells; don't lean on it.
 
-**WRITE (cell by cell, keyboard only):** with the Prospects tab open and frontmost, press
-**Ctrl+J** (Sheets' name-box shortcut), type the cell reference (e.g. `J9`), press Enter,
-type the value, press Enter. This works even on rows hidden by a filter. Establish grid
-focus with one physical click on a visible cell at the start of a write session. Do NOT
-rely on `#gid=...&range=` URL navigation to position typing — it moves the selection but
-often not keyboard focus, and keystrokes vanish silently. For several cells in one row,
-click the first cell and Tab across (type, Tab, type, Tab), Enter to commit the row.
+**WRITE (the Drive wave-file upload, one button for new prospects AND advances — same
+mechanism as the personal edition, pointed at the shared team folder):** Direct cell
+writes through the browser are unreliable and can corrupt the single source of truth, so
+the engine never types into cells live. It writes everything the same way new prospects
+already land: a **wave CSV the engine writes into Drive, then Claude clicks the import**.
+Each rep's sheet has the same bound script (**QWB Tools -> Import newest wave**), which
+reads the newest `wave_<rep>_*.csv` tagged to that rep from the shared
+**"QWB Prospect Finder - Team Skill"** Drive folder (id `13IhV_Ioh-HVpuaWaEd9m1YheRfpfOVz7`
+— see **TEAM_WAVE_FOLDER** in Config), matches each row by **Profile URL**, and updates
+that person's existing row in place or adds them if new. Only non-empty cells overwrite,
+so blanks preserve what is already there. Same one button for a brand-new lead or a
+status advance, and no duplicates.
 
-**VERIFY:** after each write or small batch, read the cells back via the gviz fetch
-before reporting. Statuses must match the canonical 13 character for character or the
-board drops the person from the funnel.
+**How the engine writes each run:**
+1. Assemble ONE wave file holding every change this run: status advances, staged message
+   drafts, and any new prospect rows. One row per person.
+2. Columns are POSITION-aligned to the Prospects tab: A=Date Added, C=Name, E=Profile URL
+   (the match key), J=Status, K=Date of Last Touch, L=Next Follow-Up Date,
+   M=Reply/Conversation Notes, P=Message 1 (Touch 2) Text, S=Touch 3 (Bridge Ask) Text
+   (if present), AE=Stage 4 Next-Move Text.
+3. For an UPDATE, fill Name and Profile URL (to match) plus only the columns that change,
+   and leave the rest blank so the upsert preserves them. For a NEW prospect, fill the
+   identification columns and the Connection Note.
+4. **The engine writes the wave file directly into the shared "QWB Prospect Finder - Team
+   Skill" Drive folder** (Drive connector `create_file`, folder id
+   `13IhV_Ioh-HVpuaWaEd9m1YheRfpfOVz7`, name `wave_<rep-name>_<timestamp>.csv` — the
+   rep-name tag is what keeps this rep's file from being picked up by a teammate's
+   import, mime `text/csv`, conversion disabled, and the CSV passed as **base64Content**
+   never plain text, because the LinkedIn URLs in the rows trip the content filter as
+   text and force a useless download to the computer; base64 hides them so the file
+   lands straight in Drive). The rep never handles a file, and Claude clicks the import
+   for them: **QWB Tools -> Import newest wave** and the importer applies it and archives
+   it.
+5. **VERIFY** by gviz readback afterward. Statuses must match the canonical 13 character
+   for character or the board drops the person from the funnel.
 
-**Column map (Prospects):** E = Profile URL · J = Status · K = Date of Last Touch ·
-L = Next Follow-Up Date · M = Reply/Conversation Notes · N = Booked Date ·
-O = Connection Note · P = Message 1 (Touch 2) Text · AE = Stage 4 Next-Move Text.
+**Backup path:** the sheet also carries an "Engine Inbox" tab and paste-and-click
+functions (applyInboxUpdates / setupInboxTab) for a manual upsert if Drive is ever
+unavailable, or if a rep's copy of the tracker doesn't have the import script installed
+yet — flag that to the rep the first time you hit it rather than silently falling back.
+
+**Last resort:** if neither path works, hand the rep the exact cells to paste and say so.
+Never improvise blind cell writes on the live tracker.
+
+**Column map (Prospects):** E = Profile URL (match key) · J = Status · K = Date of Last
+Touch · L = Next Follow-Up Date · M = Reply/Conversation Notes · N = Booked Date ·
+O = Connection Note · P = Message 1 (Touch 2) Text · S = Touch 3 (Bridge Ask) Text (if
+present) · AE = Stage 4 Next-Move Text.
+
+**Trailing columns the bound script maintains automatically (never write these in a wave
+file — they trail your last data column, so they shift nothing you use):** Open Profile
+(a click-to-open LinkedIn name-search link) · Channel (`Sales Nav` if the Profile URL
+contains `/sales/lead/`, else `LinkedIn` — read it to pick which inbox to verify in) ·
+Verify (auto-flags any message-sent Status whose Date of Last Touch is blank). On Chad's
+master tracker these sit at columns AF/AG/AH; your copy may sit at different letters.
+They refresh on every wave import and on QWB Tools -> Rebuild board.
 
 ---
 
 ## Write the advance into the tracker (after the action is verified)
 
-Once the verify step confirms it, WRITE these fields into that person's row in the
-Prospects tab — don't hand them back as a paste:
+Once the verify step confirms it, add the advance to this run's wave file as one row,
+keyed by the person's **Profile URL**, with only the fields that changed:
 
 - **Status** → the new status from the stage machine (canonical list only)
 - **Date of Last Touch** → today
@@ -556,10 +639,10 @@ Prospects tab — don't hand them back as a paste:
 - **Reply/Conversation Notes** → append what they said, the dated sub-state tags, and the
   second-layer "why" once you have it
 
-Verify each write by readback (the gviz fetch of those cells) before reporting it — a
-write you didn't read back is a write you don't have. Then report exactly what you wrote:
-row, name, old status → new status, new dates. You are recording an advance you already
-verified, not sending anything. Never write on the Pipeline board or Settings.
+Claude writes the file into the shared Drive folder and clicks **QWB Tools -> Import
+newest wave**, then verifies each write by gviz readback before reporting it. You are
+recording an advance you already verified, not sending anything. Never write on the
+Pipeline board or Settings.
 
 ---
 
@@ -568,6 +651,7 @@ verified, not sending anything. Never write on the Pipeline board or Settings.
 ```
 === PIPELINE RUN — [date] ===
 Connect queue sent: [n] of 25 cap   Accepted → Connected: [n]   Withdrawn (14-day): [n]
+Full sweep: [n] tracked rows corrected   [n] untracked people flagged for the rep's call
 Due today: [n]   Drafted: [n]  (Converse: [n] | Qualify+Transition: [n] | Lane A/B: [n] | nudges: [n])
 Verified sent: [n]   Replies found: [n]   Held (didn't send): [n]
 Calls booked: [n]   Zooms booked: [n]   Moved to Slow Lane (yours): [n]
@@ -589,3 +673,7 @@ messaging before I advance it.
   shipping something generic.
 - **A clear no / "happy where I am"** → `Not a Fit` or `Slow Lane`. Never push through a
   decline.
+- **Real activity found on someone not in the tracker** → never add them yourself, no
+  matter how clearly they belong. Tell the rep what you found (the name, the platform,
+  what's already happened in the thread) and let them decide whether to add them and at
+  what stage. Only write the row once they say so.
