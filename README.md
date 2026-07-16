@@ -34,8 +34,6 @@ Then click **Install** on **prospect-finder-team-v2** and **linkedin-follow-up-e
 
 Either way, the skills load automatically once installed.
 
-**Already on the old prospect-finder-team / linkedin-follow-up-engine-team names?** Uninstall those and install the -v2 versions above — the old plugin names are retired and no longer maintained in this repo.
-
 ## How to use them
 
 Once installed, just talk to Claude naturally:
