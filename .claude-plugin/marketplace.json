@@ -14,6 +14,11 @@
       "name": "linkedin-follow-up-engine-team-v2",
       "source": "./linkedin-follow-up-engine-team-v2",
       "description": "QWB pipeline brain (v2.0 Command Center grid) — reads the rep's Prospects tracker and drafts the exact next follow-up to move each prospect from found to Client via the CCQTTC drip."
-    }
+    },
+        {
+                "name": "linkedin-engine-team",
+                "source": "./linkedin-engine-team",
+                "description": "LinkedIn pipeline with YOUR voice + DNA — verify reality, draft, stage, report"
+        }
   ]
 }
