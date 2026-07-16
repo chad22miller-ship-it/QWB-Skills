@@ -6,13 +6,13 @@ Shared Claude skills for the QWB team. Install them once and your Claude runs th
 
 ## What's inside
 
-### prospect-finder-team
+### prospect-finder-team-v2
 
-Your prospecting engine. It pulls new leads from your own LinkedIn Sales Navigator search, scores each one STRONG, MAYBE, or SKIP on our recruiting rubric, drafts your connection notes, and logs the strong ones to your tracker. You point it at your search and your tracker.
+Your prospecting engine (v2.0 Command Center grid). It pulls new leads from your own LinkedIn Sales Navigator search, scores each one STRONG, MAYBE, or SKIP on our recruiting rubric, drafts your connection notes, and logs the strong ones to your tracker. You point it at your search and your tracker.
 
-### linkedin-follow-up-engine-team
+### linkedin-follow-up-engine-team-v2
 
-Your pipeline brain. It reads your Prospects tracker, finds everyone who is due or stuck at every stage, and drafts the exact next message to move each person from found to client through the QWB drip. You send everything by hand. It never auto-sends.
+Your pipeline brain (v2.0 Command Center grid). It reads your Prospects tracker, finds everyone who is due or stuck at every stage, and drafts the exact next message to move each person from found to client through the QWB drip. You send everything by hand. It never auto-sends.
 
 ## Install
 
@@ -22,24 +22,26 @@ Your pipeline brain. It reads your Prospects tracker, finds everyone who is due 
 https://github.com/chad22miller-ship-it/qwb-skills
 ```
 
-Then click **Install** on **prospect-finder-team** and **linkedin-follow-up-engine-team**. Full walkthrough in [GET-STARTED.md](GET-STARTED.md).
+Then click **Install** on **prospect-finder-team-v2** and **linkedin-follow-up-engine-team-v2**. Full walkthrough in [GET-STARTED.md](GET-STARTED.md).
 
 **In Claude Code (terminal):** run these one at a time:
 
 ```
 /plugin marketplace add chad22miller-ship-it/qwb-skills
-/plugin install prospect-finder-team@qwb-skills
-/plugin install linkedin-follow-up-engine-team@qwb-skills
+/plugin install prospect-finder-team-v2@qwb-skills
+/plugin install linkedin-follow-up-engine-team-v2@qwb-skills
 ```
 
 Either way, the skills load automatically once installed.
+
+**Already on the old prospect-finder-team / linkedin-follow-up-engine-team names?** Uninstall those and install the -v2 versions above — the old plugin names are retired and no longer maintained in this repo.
 
 ## How to use them
 
 Once installed, just talk to Claude naturally:
 
-- "Find prospects" or "run my prospecting" fires prospect-finder-team.
-- "Who's due" or "run my follow-ups" or "what do I send next" fires linkedin-follow-up-engine-team.
+- "Find prospects" or "run my prospecting" fires prospect-finder-team-v2.
+- "Who's due" or "run my follow-ups" or "what do I send next" fires linkedin-follow-up-engine-team-v2.
 
 Every rep works from their own Sales Navigator search and their own tracker.
 

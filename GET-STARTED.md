@@ -10,13 +10,13 @@ Everything you need to go from zero to running your pipeline. About 5 minutes. D
 2. In the **Personal plugins** section, click the **+** button and choose **Add marketplace**.
 3. Pick **Add from a repository**, paste this, and add it:
 
-   ```
-   https://github.com/chad22miller-ship-it/qwb-skills
-   ```
+```
+https://github.com/chad22miller-ship-it/qwb-skills
+```
 
 4. Back in the Plugins list, click **Install** on both:
-   - **prospect-finder-team**
-   - **linkedin-follow-up-engine-team**
+- **prospect-finder-team-v2**
+- **linkedin-follow-up-engine-team-v2**
 
 That's it. The skills load automatically. (Using Claude Code in a terminal instead? See the bottom of this page.)
 
@@ -24,11 +24,11 @@ That's it. The skills load automatically. (Using Claude Code in a terminal inste
 
 ## Step 2 — Get your own tracker
 
-The skills run on YOUR own copy of the QWB Command Center tracker. One rep, one tracker — never run off a shared sheet, or your pipelines collide.
+The skills run on YOUR own copy of the QWB Command Center v2.0 tracker. One rep, one tracker — never run off a shared sheet, or your pipelines collide.
 
 **Make your own copy in one click:** https://docs.google.com/spreadsheets/d/1NKLx5k5_PpHyyinaIK0LwllMXDPYueU95PvIOVqDpdQ/copy
 
-Click the link, hit **Make a copy**, and it's yours. Keep the three tabs as they are — the Prospects tab is your command center, and the dashboard fills itself.
+Click the link, hit **Make a copy**, and it's yours. Keep the tabs as they are — the Prospects tab is your command center, and the dashboard fills itself.
 
 ---
 
@@ -50,7 +50,7 @@ The prospecting skill pulls leads from your own saved Sales Navigator search. Bu
 Once you are installed and connected, paste this into Claude and fill in your three lines:
 
 ```
-I just installed prospect-finder-team and linkedin-follow-up-engine-team.
+I just installed prospect-finder-team-v2 and linkedin-follow-up-engine-team-v2.
 Set me up and remember these for every run:
 My tracker URL: <paste yours>
 My Sales Navigator saved-search URL: <paste yours>
@@ -83,8 +83,8 @@ Paste these one at a time:
 
 ```
 /plugin marketplace add chad22miller-ship-it/qwb-skills
-/plugin install prospect-finder-team@qwb-skills
-/plugin install linkedin-follow-up-engine-team@qwb-skills
+/plugin install prospect-finder-team-v2@qwb-skills
+/plugin install linkedin-follow-up-engine-team-v2@qwb-skills
 ```
 
 *Maintained by chad22miller-ship-it for the QWB team.*
