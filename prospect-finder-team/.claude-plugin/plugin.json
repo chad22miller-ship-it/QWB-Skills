@@ -1,5 +1,0 @@
-{
-  "name": "prospect-finder-team",
-  "version": "1.0.0",
-  "description": "QWB prospecting engine — finds and triages new LinkedIn Sales Navigator leads, scores each STRONG/MAYBE/SKIP, drafts connection notes, and logs the strong ones to the rep's own tracker."
-}
