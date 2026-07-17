@@ -12,7 +12,7 @@ Your prospecting engine (v2.0 Command Center grid). It pulls new leads from your
 
 Your pipeline brain (v2.0 Command Center grid). It reads your Prospects tracker, finds everyone who is due or stuck at every stage, and drafts the exact next message to move each person from found to client through the QWB CCQTTC drip. You send everything by hand. It never auto-sends.
 
-**First run, one-time setup:** the v2.0 Command Center template ships with a broken wave importer. The fixed script is bundled in this skill at `skills/linkedin-engine-team/assets/QWB_Tools_Importer_v2_1.gs`. On your tracker: Extensions -> Apps Script -> replace all the code with that file -> set FOLDER_ID to your wave Drive folder id -> Save -> refresh. The skill walks you through it on the first run.
+**First run, one-time setup:** if you copied the **updated** team template, the full QWB Tools v2.2 script (fixed importer + one-shot wave lockout + folder-hygiene warning + self-cleaning board + "Clear old rows" button + nightly rebuild trigger) is already installed — skip this. If your sheet still has the **old v2.0** importer (symptom: "Import newest wave" always says "No wave file found" even when a wave is present), fix it once: the corrected script is bundled at `skills/linkedin-engine-team/assets/QWB_Tools_Importer_v2_1.gs`. On your tracker: Extensions -> Apps Script -> replace all the code with that file -> set FOLDER_ID to your wave Drive folder id -> Save -> refresh. The skill walks you through it on the first run.
 
 ## Install
 
