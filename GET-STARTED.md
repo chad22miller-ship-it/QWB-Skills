@@ -16,7 +16,7 @@ https://github.com/chad22miller-ship-it/qwb-skills
 
 4. Back in the Plugins list, click **Install** on both:
 - **prospect-finder-team-v2**
-- **linkedin-follow-up-engine-team-v2**
+- **linkedin-engine-team**
 
 That's it. The skills load automatically. (Using Claude Code in a terminal instead? See the bottom of this page.)
 
@@ -32,25 +32,39 @@ Click the link, hit **Make a copy**, and it's yours. Keep the tabs as they are �
 
 ---
 
-## Step 3 — Save your Sales Navigator search
+## Step 3 — Fix the wave importer (one time, 2 minutes)
+
+The v2.0 tracker template ships with a broken "Import newest wave" button — left as is, your follow-up tracking silently never saves. Fix it once and you're set for good:
+
+1. In your tracker copy, open **Extensions -> Apps Script**.
+2. Select all the code in there and delete it.
+3. Open the bundled fix from this repo: `linkedin-engine-team/skills/linkedin-engine-team/assets/QWB_Tools_Importer_v2_1.gs`. Copy all of it and paste it in.
+4. Near the top, set `FOLDER_ID` to your own wave Drive folder id (the folder Claude drops your wave files into — ask Chad if you're unsure which one).
+5. Click **Save**, then refresh your tracker tab.
+
+The engine walks you through this on your first run too, so don't stress if you skip ahead — just know it has to happen once before follow-up advances will save.
+
+---
+
+## Step 4 — Save your Sales Navigator search
 
 The prospecting skill pulls leads from your own saved Sales Navigator search. Build one for your market and save it. Want the proven setup? Ask Chad for the QWB starter filters.
 
 ---
 
-## Step 4 — Connect your tools (one time each)
+## Step 5 — Connect your tools (one time each)
 
 - **Google Drive / Sheets** — so Claude can read and write your tracker.
 - **LinkedIn through Claude in Chrome** — so Claude can read your leads and check your messages. Install the Claude in Chrome extension and stay logged into LinkedIn.
 
 ---
 
-## Step 5 — First run: point the skills at your stuff
+## Step 6 — First run: point the skills at your stuff
 
 Once you are installed and connected, paste this into Claude and fill in your three lines:
 
 ```
-I just installed prospect-finder-team-v2 and linkedin-follow-up-engine-team-v2.
+I just installed prospect-finder-team-v2 and linkedin-engine-team.
 Set me up and remember these for every run:
 My tracker URL: <paste yours>
 My Sales Navigator saved-search URL: <paste yours>
@@ -62,12 +76,14 @@ Claude saves these and you are live.
 
 ---
 
-## Step 6 — Run your pipeline
+## Step 7 — Run your pipeline
 
 Just talk to Claude naturally:
 
 - **"Find prospects"** — sources and scores new leads, drafts your connection notes, logs them to your tracker.
 - **"Who's due"** or **"what do I send next"** — tells you exactly who to follow up with and the message to send. You send it by hand. It never auto-sends.
+
+A few things the engine will never do, so you can trust it: it never auto-sends a message, it never re-adds anyone you deleted, and it never advances a prospect without verifying the real LinkedIn thread first.
 
 ---
 
@@ -84,7 +100,7 @@ Paste these one at a time:
 ```
 /plugin marketplace add chad22miller-ship-it/qwb-skills
 /plugin install prospect-finder-team-v2@qwb-skills
-/plugin install linkedin-follow-up-engine-team-v2@qwb-skills
+/plugin install linkedin-engine-team@qwb-skills
 ```
 
 *Maintained by chad22miller-ship-it for the QWB team.*
