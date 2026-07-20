@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>QWB Prospect Tracker v3.1</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#0b0b0f;color:#f2f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:920px;margin:0 auto;padding:18px 16px 60px}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .banner{font-size:11.5px;color:#7fd4a0;background:rgba(60,180,110,.12);border:1px solid rgba(60,180,110,.3);border-radius:999px;padding:4px 10px}
+  .stbtn{color:#f2f2f5;border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:500;cursor:pointer}
+  .subbtn{border-radius:9px;padding:7px 16px;font-size:13px;font-weight:500;cursor:pointer}
+  .navbtn{border:1px solid #2a2a32;background:#17171d;color:#9a9aa2;border-radius:9px;padding:7px 16px;font-size:13px;font-weight:500;cursor:pointer}
+  .navbtn.on{background:rgba(224,86,106,.14);border-color:#e0566a;color:#ff9aa6}
+  .card{background:#16161c;border:1px solid #2a2a32;border-radius:12px;padding:13px 14px;margin-bottom:12px}
+  textarea{width:100%;background:#0b0b0f;border:1px solid #2a2a32;border-radius:9px;color:#f2f2f5;font-size:12.5px;line-height:1.5;padding:10px;resize:vertical;min-height:56px;font-family:inherit;outline:none}
+  a.msg{text-decoration:none;color:#6db3ff;font-size:12.5px;font-weight:500}
+  .act{border:1px solid #2a2a32;background:#17171d;color:#f2f2f5;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer}
+  .refresh{border:1px solid #3a2a30;background:rgba(224,86,106,.12);color:#e0566a;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:500;cursor:pointer}
+  .panel{background:#16161c;border:1px solid #2a2a32;border-radius:12px;padding:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row" style="align-items:flex-start">
+    <div>
+      <div style="font-size:21px;font-weight:500">Prospect Tracker <span style="color:#e0566a">v3.1</span></div>
+      <div style="font-size:12px;color:#9a9aa2;margin-top:3px" id="loadline">Demo mode · sample of your pipeline</div>
+    </div>
+    <button class="refresh" style="margin-left:auto" onclick="boot()">↻ Refresh</button>
+  </div>
+
+  <div class="row" style="margin:12px 0 6px">
+    <button class="navbtn on" id="nav-board" onclick="setView('board')">Board</button>
+    <button class="navbtn" id="nav-dash" onclick="setView('dash')">Dashboard</button>
+    <span class="banner" style="margin-left:6px">Drafts only. Nothing is ever sent. Opens your regular inbox, never Sales Nav.</span>
+  </div>
+
+  <div id="boardview">
+    <div id="plan"></div>
+    <div class="row" id="stages"></div>
+    <div class="row" id="subs" style="margin:11px 0 4px"></div>
+    <div style="font-size:12px;color:#9a9aa2;margin:6px 0 12px" id="desc"></div>
+    <div id="list"></div>
+  </div>
+
+  <div id="dashview" style="display:none"></div>
+</div>
+
+<script>
+/* ============================================================
+   PASTE YOUR WEB APP URL BELOW to go LIVE (two-way sync).
+   Leave blank to stay in demo mode.
+   ============================================================ */
+const API_URL = "";
+const MONTHLY_GOAL = 200;
+const DAILY_GOAL = 15;
+const WITHDRAW_DAYS = 14;
+
+/* Colors are keyed by the DISPLAY stage the user sees */
+const SC={
+ "Identified":{c:"#E4A62B",s:"rgba(228,166,43,.15)"},
+ "Msg 1 Sent":{c:"#9B8CFF",s:"rgba(155,140,255,.16)"},
+ "Msg 2 Sent":{c:"#2FBE88",s:"rgba(47,190,136,.15)"},
+ "Lane A":{c:"#FF7A45",s:"rgba(255,122,69,.15)"},
+ "Slow Lane":{c:"#8A94A6",s:"rgba(138,148,166,.15)"},
+ "All":{c:"#E0566A",s:"rgba(224,86,106,.15)"}
+};
+const STAGES=["Identified","Msg 1 Sent","Msg 2 Sent","Lane A","Slow Lane","All"];
+const FUNNEL_BARS=["Identified","Msg 1 Sent","Msg 2 Sent","Lane A","Slow Lane"];
+/* hidden internal statuses map to a display stage so the accept step never shows */
+function dStage(st){
+  if(st==="Identified"||st==="Connection Sent")return "Identified";
+  if(st==="Connected"||st==="Msg 1 Sent")return "Msg 1 Sent";
+  return st;
+}
+const SEND_NEXT={"Identified":"Connection Sent","Connected":"Msg 1 Sent"};
+const REPLY_NEXT={"Msg 1 Sent":"Msg 2 Sent","Msg 2 Sent":"Lane A","Lane A":"Lane A","Slow Lane":"Msg 2 Sent"};
+const NEXTMSG={
+ "Connected":"Thanks for connecting. I'm curious, what got you into your field in the first place?",
+ "Msg 2 Sent":"That's a great story. Do you see yourself doing that long term? Reason I ask, if there was a way to earn on the side without risking your day job, would you be open to a chat?",
+ "Lane A":"Awesome. Best way to start is a quick 15 minute call, no pressure. How's Tuesday or Thursday, 6 or 7 better for you?"
+};
+const NUDGES=["No worries if you've been slammed, {f}. Still curious what got you started, I always like hearing how people found their lane.","All good if life got busy, {f}. I keep wondering what pulled you into this in the first place.","Circling back with zero pressure, {f}. Genuinely curious what led you here, feels like there's a story."];
+const SENT_STAGES={"Connection Sent":1,"Msg 1 Sent":1,"Msg 2 Sent":1,"Slow Lane":1};
+
+const DEMO=[
+ {n:"Michelle Marshall",url:"https://www.linkedin.com/in/michelle-marshall-a42294187",role:"Founder/CEO · Clinical Innovation · Miami FL",st:"Identified",state:"draft",days:0,msg:"Hey Michelle, Clinical Innovation is a fitting name, sounds like healthcare and mission-driven work go hand in hand for you. Would be great to connect!"},
+ {n:"Isaiah West",url:"https://www.linkedin.com/in/isaiah-west-95b06619a",role:"Sales Agent · National Debt Relief · Miami FL",st:"Identified",state:"draft",days:0,msg:"Hey Isaiah, moving from AT&T retail into debt relief to actually help people, respect that. Would be great to connect!"},
+ {n:"Dr. Tanveer Padder",url:"https://www.linkedin.com/in/drtpadder",role:"Triple Board-Certified Psychiatrist · OnDemand Psychiatry",st:"Connection Sent",state:"sent",days:16,msg:"Hey Tanveer, scaling your own training platform past the clinic is a big vision. Would be great to connect!"},
+ {n:"Ralph Jean-Louis",url:"https://www.linkedin.com/in/ralph-jean-louis-a08290233",role:"Account Executive · Certus · Port St Lucie FL",st:"Connection Sent",state:"sent",days:8,msg:"Hey Ralph, President's Club in 2024 and still crushing quota, that consistency stands out. Would be great to connect!"},
+ {n:"Daniel Rubin",url:"https://www.linkedin.com/in/daniel-rubin-940700293",role:"Co-Founder · Transcend Wellness · Fort Lauderdale FL",st:"Connection Sent",state:"sent",days:21,msg:"Hey Daniel, building Transcend Wellness to actually help people recover is meaningful work. Would be great to connect!"},
+ {n:"Nathan Borowski",url:"https://www.linkedin.com/in/nathan-borowski-916968321",role:"Business Development · CedarRock Advisory · New York NY",st:"Connected",state:"draft",days:0,msg:"Thanks for connecting, Nathan. I'm curious, what got you into business development in the first place?"},
+ {n:"David Pretty",url:"https://www.linkedin.com/in/david-pretty-722520187",role:"Account Executive · Uber · Miami FL",st:"Msg 1 Sent",state:"sent",days:3,msg:"Thanks for the add, David. Curious what drew you into sales, feels like everyone's got a story there."},
+ {n:"Moshe Mindick CPA",url:"https://www.linkedin.com/in/moshemindick",role:"Founder/CEO · Bright Hill Advisors · Miami FL",st:"Msg 1 Sent",state:"sent",days:5,msg:"Thanks for connecting, Moshe. I'm curious, what got you into building your own firm in the first place?"},
+ {n:"Justin Diamond",url:"https://www.linkedin.com/in/justin-diamond-7b458a105",role:"Account Executive · Birdie AI · Miami Beach FL",st:"Msg 2 Sent",state:"draft",days:0,msg:"Love it, Justin. Reason I ask, if there was a way to build income on the side without touching your day job, would you be open to a quick chat?"},
+ {n:"Connor Watts",url:"https://www.linkedin.com/in/connor-watts",role:"Founder · Quantum Wealth Builders · Fort Lauderdale FL",st:"Lane A",state:"draft",days:0,msg:"No rush at all, Connor. Want me to send you a quick 3 minute video first so you can see if it's even worth a call? Zero pressure either way."},
+ {n:"Tri Dutta",url:"https://www.linkedin.com/in/tri-dutta",role:"Custom Software & AI Tools · Miami FL",st:"Slow Lane",state:"sent",days:9,msg:"All good if life got busy, Tri. What pulled you into building your own software shop to begin with?"}
+];
+const DEMO_HEAD={"Identified":50,"Connection Sent":14,"Connected":1,"Msg 1 Sent":29,"Msg 2 Sent":2,"Lane A":1,"Slow Lane":3};
+
+let DATA=[], stage="All", sub="draft", view="board";
+
+function daysFrom(s){var d=new Date(s);if(isNaN(d.getTime()))return 0;return Math.max(Math.floor((Date.now()-d.getTime())/86400000),0);}
+function pickMsg(r){var st=r.status;if(st==="Identified"||st==="Connection Sent")return r.cn||r.m1||"";if(st==="Msg 2 Sent")return r.t3||r.m1||"";if(st==="Lane A")return r.s4||r.t3||r.m1||"";return r.m1||r.cn||"";}
+function mapRow(r){var sVal=String(r.sub||"").trim().toLowerCase();var state=sVal==="draft"?"draft":sVal==="sent"?"sent":(SENT_STAGES[r.status]?"sent":"draft");return {n:r.name,url:r.url,role:r.role||"",st:r.status,state:state,days:daysFrom(r.last),msg:pickMsg(r)};}
+
+function boot(){
+  if(API_URL){
+    document.getElementById("loadline").textContent="Loading live from your sheet…";
+    var cb="__qwb"+Date.now();
+    window[cb]=function(res){DATA=(res.rows||[]).filter(function(r){return r.status&&r.status!=="Withdrawn";}).map(mapRow).map(function(d,i){d.id=i;return d;});document.getElementById("loadline").innerHTML='<span style="color:#2fbe88">● Live</span> · synced to your Prospects sheet · '+DATA.length+' prospects';draw();};
+    var s=document.createElement("script");s.src=API_URL+"?callback="+cb+"&_="+Date.now();
+    s.onerror=function(){DATA=DEMO.map(function(d,i){d.id=i;return d;});document.getElementById("loadline").textContent="Could not reach the sheet — showing demo. Check the Web App URL.";draw();};
+    document.body.appendChild(s);
+  } else {DATA=DEMO.map(function(d,i){d.id=i;return d;});document.getElementById("loadline").textContent="Demo mode · sample of your pipeline (paste your Web App URL in the file to go live)";draw();}
+}
+function push(d,patch){if(!API_URL)return;try{fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({url:d.url},patch))});}catch(e){}}
+
+function todayKey(){return "qwb_sent_"+new Date().toISOString().slice(0,10);}
+function sentToday(){try{return +(localStorage.getItem(todayKey())||0);}catch(e){return 0;}}
+function bumpSent(){try{localStorage.setItem(todayKey(),sentToday()+1);}catch(e){}}
+
+function setView(v){view=v;document.getElementById("nav-board").className="navbtn"+(v==="board"?" on":"");document.getElementById("nav-dash").className="navbtn"+(v==="dash"?" on":"");document.getElementById("boardview").style.display=v==="board"?"":"none";document.getElementById("dashview").style.display=v==="dash"?"":"none";draw();}
+function draw(){ if(view==="board") render(); else renderDash(); }
+function goBoard(stg,sb){stage=stg;sub=sb;setView('board');window.scrollTo(0,0);}
+function withdrawDue(){return DATA.filter(function(d){return d.st==="Connection Sent"&&d.days>=WITHDRAW_DAYS;}).length;}
+function planHTML(){
+ var dRem=Math.max(DAILY_GOAL-sentToday(),0);
+ var draftsToSend=DATA.filter(function(d){return d.state==="draft";}).length;
+ var nudgesDue=DATA.filter(function(d){return d.state==="sent"&&d.st!=="Connection Sent";}).length;
+ var wd=withdrawDue();
+ var ptile=function(l,click,num,sub2,col){return '<div onclick="'+click+'" style="cursor:pointer;background:#16161c;border:1px solid #2a2a32;border-left:3px solid '+col+';border-radius:10px;padding:11px 12px"><div style="font-size:22px;font-weight:500;color:'+col+'">'+num+'</div><div style="font-size:12px;color:#f2f2f5;margin-top:1px">'+l+'</div><div style="font-size:10.5px;color:#7a7a82">'+sub2+' &#8599;</div></div>';};
+ return '<div class="panel" style="margin-bottom:14px"><div style="font-size:14px;font-weight:500;margin-bottom:2px">Your plan today</div><div style="font-size:11.5px;color:#9a9aa2;margin-bottom:12px">Whatever is due. Tap a tile to jump to that list.</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">'+ptile("Connects to send","goBoard('Identified','draft')",dRem,"of "+DAILY_GOAL+" today","#E4A62B")+ptile("Drafts to send","goBoard('All','draft')",draftsToSend,"messages ready now","#E0566A")+ptile("Nudges due","goBoard('All','sent')",nudgesDue,"gone quiet, bump them","#2FBE88")+ptile("Withdraws due","goBoard('Identified','sent')",wd,WITHDRAW_DAYS+"+ days, no accept","#8A94A6")+'</div></div>';
+}
+
+function inStage(d){return stage==="All"?true:dStage(d.st)===stage;}
+function stCount(s){return s==="All"?DATA.length:DATA.filter(function(d){return dStage(d.st)===s;}).length;}
+function subCount(state){return DATA.filter(function(d){return inStage(d)&&d.state===state;}).length;}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function initials(n){return String(n||"?").split(/\s+/).slice(0,2).map(function(x){return x[0];}).join("").toUpperCase();}
+function first(n){return String(n||"").split(/\s+/)[0];}
+function slugFrom(url){var m=String(url||"").match(/\/in\/([^\/?#]+)/);return m?m[1]:"";}
+
+function render(){
+  document.getElementById("plan").innerHTML=planHTML();
+  var stEl=document.getElementById("stages");stEl.innerHTML="";
+  STAGES.forEach(function(s){var on=stage===s,col=SC[s].c;var b=document.createElement("button");b.className="stbtn";
+    b.innerHTML='<span style="width:8px;height:8px;border-radius:50%;background:'+col+';display:inline-block;margin-right:6px;vertical-align:1px"></span>'+s+' <span style="color:'+(on?col:'#8a8a92')+';margin-left:3px;font-size:11px">'+stCount(s)+'</span>';
+    b.style.border="1px solid "+(on?col:"#2a2a32");b.style.background=on?SC[s].s:"#17171d";b.onclick=function(){stage=s;render();};stEl.appendChild(b);});
+  var sbEl=document.getElementById("subs");sbEl.innerHTML="";
+  [["draft","Drafts","#E0566A"],["sent","Sent","#2FBE88"]].forEach(function(t){var k=t[0],lbl=t[1],col=t[2],on=sub===k;var b=document.createElement("button");b.className="subbtn";
+    b.textContent=lbl+" · "+subCount(k);b.style.border="1px solid "+(on?col:"#2a2a32");b.style.background=on?"rgba(255,255,255,.05)":"transparent";b.style.color=on?col:"#8a8a92";b.onclick=function(){sub=k;render();};sbEl.appendChild(b);});
+  document.getElementById("desc").textContent=(sub==="draft"?"→ Ready to send. Edit, copy, open the thread, send by hand.":"→ Sent and waiting. Reply loads the next message. Nudge composes a bump.");
+  var list=document.getElementById("list");list.innerHTML="";
+  var items=DATA.filter(function(d){return inStage(d)&&d.state===sub;});
+  if(!items.length){list.innerHTML='<div style="color:#7a7a82;font-size:13px;padding:10px 0">Nothing here right now.</div>';return;}
+  items.forEach(function(d){list.appendChild(card(d));});
+}
+
+function card(d){
+  var ds=dStage(d.st);var sc=SC[ds]||SC.All;var el=document.createElement("div");el.className="card";el.style.borderLeft="3px solid "+sc.c;
+  var tag=d.nudged?'<span style="font-size:10px;color:#ffcf7a;background:rgba(240,180,41,.14);border-radius:6px;padding:2px 8px;margin-left:6px">nudge</span>':'';
+  var acts, stateLine;
+  if(d.state==="draft"){
+    var sl=(d.st==="Identified")?"✓ Sent connect":"✓ Sent it";
+    acts='<button data-a="sent" style="border:1px solid #2FBE88;background:rgba(47,190,136,.14);color:#7fe0b4;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer">'+sl+'</button>';
+    stateLine=(d.st==="Identified")?"Draft ready, edit then copy":"They accepted — opener ready";
+  } else if(d.st==="Connection Sent"){
+    var wbtn=(d.days>=WITHDRAW_DAYS)?'<button data-a="withdraw" style="border:1px solid #8A94A6;background:rgba(138,148,166,.12);color:#c3c8d0;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer">✕ Withdraw</button>':'';
+    acts='<button data-a="accept" style="border:1px solid #4C9AF0;background:rgba(76,154,240,.14);color:#9fc9ff;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:500;cursor:pointer">✓ Accepted</button>'+wbtn;
+    stateLine="Invite out — waiting on accept · "+d.days+"d"+(d.days>=WITHDRAW_DAYS?" · overdue":"");
+  } else {
+    acts='<button data-a="nudge" style="border:1px solid #E4A62B;background:rgba(228,166,43,.14);color:#ffcf7a;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:500;cursor:pointer">✎ Nudge</button><button data-a="reply" style="border:1px solid #E0566A;background:rgba(224,86,106,.14);color:#ff9aa6;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:500;cursor:pointer">↩ They replied</button>';
+    stateLine="Sent — waiting on reply";
+  }
+  var showMsg=!(d.st==="Connection Sent");
+  el.innerHTML='<div class="row"><div style="width:34px;height:34px;border-radius:50%;background:'+sc.s+';color:'+sc.c+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500">'+initials(d.n)+'</div>'+
+   '<div style="min-width:0"><div style="font-weight:500;font-size:14.5px">'+esc(d.n)+'</div><div style="font-size:11.5px;color:#9a9aa2;margin-top:1px">'+esc(d.role)+'</div></div>'+
+   '<div style="margin-left:auto"><span style="font-size:10.5px;font-weight:500;color:'+sc.c+';background:'+sc.s+';border-radius:7px;padding:3px 9px">'+esc(ds)+'</span>'+tag+'</div></div>'+
+   '<div style="font-size:11px;color:#7a7a82;margin:9px 0 6px"><i>'+stateLine+'</i></div>'+
+   (showMsg?'<textarea spellcheck="false">'+esc(d.msg)+'</textarea>':'')+
+   '<div class="row" style="margin-top:9px"><a class="msg" href="https://www.linkedin.com/in/'+slugFrom(d.url)+'/" target="_blank" rel="noopener">🔗 Open on LinkedIn ↗</a>'+
+     (showMsg?'<button class="act" data-a="copy">⧉ Copy draft</button>':'')+'<div style="margin-left:auto;display:flex;gap:7px">'+acts+'</div></div>';
+  var ta=el.querySelector("textarea");if(ta){ta.addEventListener("input",function(){d.msg=ta.value;});ta.addEventListener("blur",function(){push(d,{message:d.msg});});}
+  var cp=el.querySelector('[data-a="copy"]');if(cp)cp.onclick=function(e){navigator.clipboard&&navigator.clipboard.writeText(d.msg);e.target.textContent="✓ Copied";setTimeout(function(){e.target.textContent="⧉ Copy draft";},1200);};
+  var sBtn=el.querySelector('[data-a="sent"]');if(sBtn)sBtn.onclick=function(){var nx=SEND_NEXT[d.st];if(nx)d.st=nx;d.state="sent";d.nudged=false;d.days=0;bumpSent();push(d,{status:d.st,sub:"sent"});render();};
+  var aBtn=el.querySelector('[data-a="accept"]');if(aBtn)aBtn.onclick=function(){d.st="Connected";d.state="draft";d.nudged=false;d.days=0;d.msg=NEXTMSG["Connected"];push(d,{status:"Connected",sub:"draft",message:d.msg});render();};
+  var wBtn=el.querySelector('[data-a="withdraw"]');if(wBtn)wBtn.onclick=function(){d.st="Withdrawn";push(d,{status:"Withdrawn"});DATA=DATA.filter(function(x){return x!==d;});render();};
+  var rBtn=el.querySelector('[data-a="reply"]');if(rBtn)rBtn.onclick=function(){var ns=REPLY_NEXT[d.st]||d.st;d.st=ns;d.state="draft";d.nudged=false;d.msg=NEXTMSG[ns]||d.msg;push(d,{status:ns,sub:"draft",message:d.msg});render();};
+  var nBtn=el.querySelector('[data-a="nudge"]');if(nBtn)nBtn.onclick=function(){d.msg=NUDGES[(d.id||0)%NUDGES.length].replace("{f}",first(d.n));d.state="draft";d.nudged=true;sub="draft";push(d,{sub:"draft",message:d.msg});render();};
+  return el;
+}
+
+function headMap(){
+  if(API_URL && DATA.length>0){var m={};["Identified","Connection Sent","Connected","Msg 1 Sent","Msg 2 Sent","Lane A","Slow Lane"].forEach(function(s){m[s]=DATA.filter(function(d){return d.st===s;}).length;});return m;}
+  return DEMO_HEAD;
+}
+function renderDash(){
+  var H=headMap();
+  var cnt=function(list){return list.reduce(function(a,s){return a+(H[s]||0);},0);};
+  var accepted=cnt(["Connected","Msg 1 Sent","Msg 2 Sent","Lane A","Slow Lane"]);
+  var invited=(H["Connection Sent"]||0)+accepted;
+  var messaged=cnt(["Msg 1 Sent","Msg 2 Sent","Lane A"]);
+  var replied=API_URL?cnt(["Msg 2 Sent","Lane A"]):8;
+  var booked=cnt(["Lane A"]);
+  var active=cnt(["Identified","Connection Sent","Connected","Msg 1 Sent","Msg 2 Sent","Lane A","Slow Lane"]);
+  var connR=invited?Math.round(accepted/invited*100):0;
+  var replyR=messaged?Math.round(replied/messaged*100):0;
+  var bookR=messaged?Math.round(booked/messaged*100):0;
+  var monthlyDone=API_URL?accepted:36, dailyDone=sentToday();
+  var mRem=Math.max(MONTHLY_GOAL-monthlyDone,0), dRem=Math.max(DAILY_GOAL-dailyDone,0);
+  var daysLeft=(function(){var d=new Date();return (new Date(d.getFullYear(),d.getMonth()+1,0).getDate()-d.getDate())||1;})();
+  var perDay=Math.ceil(mRem/Math.max(daysLeft,1));
+  var mPct=Math.min(Math.round(monthlyDone/MONTHLY_GOAL*100),100), dPct=Math.min(Math.round(dailyDone/DAILY_GOAL*100),100);
+
+  var HB={};FUNNEL_BARS.forEach(function(s){HB[s]=(s==="Identified")?((H["Identified"]||0)+(H["Connection Sent"]||0)):(s==="Msg 1 Sent")?((H["Connected"]||0)+(H["Msg 1 Sent"]||0)):(H[s]||0);});
+  var maxN=Math.max.apply(null,FUNNEL_BARS.map(function(s){return HB[s]||0;}))||1;
+
+  var kpi=function(l,v,c,sub){return '<div class="panel" style="padding:12px"><div style="font-size:11px;color:#9a9aa2">'+l+'</div><div style="font-size:23px;font-weight:500;color:'+c+';margin:2px 0">'+v+'</div><div style="font-size:10.5px;color:#7a7a82;line-height:1.3">'+sub+'</div></div>';};
+  var bar=function(pct,col){return '<div style="height:9px;background:#26262e;border-radius:999px;margin:10px 0 8px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:999px"></div></div>';};
+
+  var html='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">'+
+    kpi("Connection rate",connR+"%","#4C9AF0",accepted+" of "+invited+" invites accepted")+
+    kpi("Reply rate",replyR+"%","#9B8CFF",replied+" replies on "+messaged+" messaged")+
+    kpi("Booked",booked,"#FF7A45",bookR+"% of messaged")+
+    kpi("Active pipeline",active,"#e0566a","in motion right now")+'</div>';
+
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'+
+    '<div class="panel"><div class="row" style="justify-content:space-between"><span style="font-size:12.5px;color:#9a9aa2">Daily connect goal</span><span style="font-size:12px;color:#e4a62b">'+dailyDone+' / '+DAILY_GOAL+' today</span></div>'+bar(dPct,"#e4a62b")+'<div style="font-size:11.5px;color:#9a9aa2">'+dRem+' more to hit today. Counts up as you send.</div></div>'+
+    '<div class="panel"><div class="row" style="justify-content:space-between"><span style="font-size:12.5px;color:#9a9aa2">Monthly connect goal</span><span style="font-size:12px;color:#e0566a">'+monthlyDone+' / '+MONTHLY_GOAL+'</span></div>'+bar(mPct,"#e0566a")+'<div style="font-size:11.5px;color:#9a9aa2">'+mRem+' to go · '+daysLeft+' days left · <span style="color:#f2f2f5">'+perDay+' / day</span> to finish.</div></div>'+
+    '</div>';
+
+  html+='<div style="font-size:12.5px;color:#9a9aa2;margin:2px 0 8px">Where everyone sits right now</div><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">';
+  FUNNEL_BARS.forEach(function(s){var n=HB[s]||0,col=SC[s].c,w=Math.round(n/maxN*100);html+='<div style="display:flex;align-items:center;gap:10px"><div style="width:110px;font-size:12px;color:#cfcfd6;text-align:right">'+s+'</div><div style="flex:1;height:22px;background:#1a1a20;border-radius:6px;overflow:hidden"><div style="height:100%;width:'+Math.max(w,3)+'%;background:'+col+';opacity:.85;border-radius:6px"></div></div><div style="width:34px;font-size:13px;font-weight:500;text-align:right">'+n+'</div></div>';});
+  html+='</div>';
+
+  var rail=[["Invited",invited,"#E4A62B",""],["Accepted",accepted,"#4C9AF0",connR+"%"],["Messaged",messaged,"#9B8CFF",(accepted?Math.round(messaged/accepted*100):0)+"%"],["Replied",replied,"#2FBE88",replyR+"%"],["Booked",booked,"#FF7A45",bookR+"%"]];
+  html+='<div style="font-size:12.5px;color:#9a9aa2;margin:2px 0 8px">Conversion between steps</div><div style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap">';
+  rail.forEach(function(r,i){if(i>0)html+='<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;color:#7a7a82;font-size:11px;padding:0 2px"><span>→</span><span style="color:'+r[2]+'">'+r[3]+'</span></div>';html+='<div style="flex:1;min-width:78px;background:#16161c;border:1px solid #2a2a32;border-top:2px solid '+r[2]+';border-radius:10px;padding:10px 8px;text-align:center"><div style="font-size:20px;font-weight:500">'+r[1]+'</div><div style="font-size:10.5px;color:#9a9aa2">'+r[0]+'</div></div>';});
+  html+='</div>';
+
+  document.getElementById("dashview").innerHTML=html;
+}
+
+boot();
+</script>
+</body>
+</html>
