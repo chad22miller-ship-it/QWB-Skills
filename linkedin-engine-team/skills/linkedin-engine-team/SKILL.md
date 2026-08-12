@@ -142,13 +142,22 @@ A write isn't "done" until the readback proves it. Never report success off a to
 - **Silence tags live in NOTES (L), not the message text** — `[nudge1]`, `[voss]`, `[LaneA]` — so a tag never gets sent.
 - **One purpose per message.** Step 2 = rapport + curiosity. Step 3 = qualify + reveal. Lane A = context + decision. No filler.
 
-## Reliable LinkedIn reality checks (automation notes, learned 7/18/2026)
+## Reliable LinkedIn reality checks (automation notes, learned 7/18/2026, API-first method added 8/12/2026)
 
-Automation hits three walls; use these reliable methods instead of guessing:
+**Read the inbox and threads via the Voyager API FIRST, every run — not by scrolling and clicking the messaging UI.** The messaging UI has a recurring bug where the detail pane locks onto one "active" thread and every click changes the list highlight but not the pane; on 8/12/2026 this blocked ~23 thread reads across fresh tabs, keyboard nav, and Sales Nav alike, while the API path read all of them in under 3 minutes. The API also reaches the WHOLE inbox (the UI scroll caps at ~20 rendered and the "Load more" button is unreliable). Use the UI methods below only as a fallback when the API path fails this run (and say so in the report). Mechanics — all run via the browser tool's JS execution inside the rep's own logged-in tab (session-only, no stored credentials):
 
-- **Sent-invitations list caps at ~20 rendered** even when the header says more (e.g. "People (29)"). The scroll container is the `MAIN` element (not the window) — `document.querySelector('main').scrollTop = scrollHeight` repeatedly to load the rest. Extract pending names from `[aria-label^="Withdraw invitation sent to"]`. To reconcile, cross-reference tracker `Connection Sent` names against the loaded pending set (substring match), rather than trying to render all invites.
+1. **Get the CSRF token and your own profile URN.** `const csrf = document.cookie.match(/JSESSIONID="?([^;"]+)"?/)[1];` — every Voyager call needs this as a `csrf-token` header or it 400s. Your mailbox URN is your own `urn:li:fsd_profile:<id>`; harvest it from any fired messaging request (it appears in the `mailboxUrn` variable) — never hardcode another rep's URN.
+2. **Harvest current queryId hashes (they rotate with LinkedIn client updates, so never hardcode from a prior run).** Either (a) with network-request tracking on, scroll the inbox once to fire a "load more" and copy the exact `messengerConversations.<hash>` request, or (b) run `performance.getEntriesByType('resource')` in the page and regex out `messengerConversations.<hash>` and `messengerMessages.<hash>`.
+3. **Enumerate the FULL inbox by looping the conversations query.** Fetch with variables `(query:(predicateUnions:List((conversationCategoryPredicate:(category:PRIMARY_INBOX)))),count:20,mailboxUrn:<your urn>,nextCursor:<cursor>)`, headers `{accept:'application/vnd.linkedin.normalized+json+2.1','csrf-token':csrf}`. The next cursor lives at `data.data.messengerConversationsByCategoryQuery.metadata.nextCursor`; loop until it's absent. This yields a complete name → conversationUrn map for the entire inbox — this IS your inbox sweep, and it satisfies the exhaustion requirement by construction (no "Load more" ambiguity). Build the name map from the `MessagingParticipant` entities in `included` (match participants to each conversation's `*conversationParticipants` URNs).
+4. **Read any individual thread** with `messengerMessages.<hash>` + `variables=(conversationUrn:<urn>)`. CRITICAL encoding fix: after `encodeURIComponent`, ALSO replace `(`→`%28` and `)`→`%29` in the URN, or the endpoint 400s with an empty body. Get "who sent last" by comparing each message's `*sender` URN against your own profile URN (YOU vs THEM) — more reliable than the `You:` preview prefix, which sometimes drops on multi-line sends.
+5. **Caveat:** the per-thread response may be only the most recent page of a long thread — authoritative for last-message / direction / silence checks (which is what the reconciliation steps need), but follow message pagination before diffing a draft against every prior message on a long thread.
+
+FALLBACK UI methods (use only if the API path fails this run):
+
+- **Sent-invitations list caps at ~20 rendered** even when the header says more (e.g. "People (29)"). The scroll container is the `MAIN` element (not the window) — `document.querySelector('main').scrollTop = scrollHeight` repeatedly to load the rest. Extract pending names from `[aria-label^="Withdraw invitation sent to"]`. To reconcile, cross-reference tracker `Connection Sent` names against the loaded pending set (substring match), rather than trying to render all invites. (The sent-invitations manager is SDUI, not the messaging API, so this UI method stays the primary way to read pending invites.)
 - **Messaging inbox caps at ~20 threads** and virtualizes. The reliable "who sent last" signal is the conversation-list snippet: a snippet starting `You:` = the rep sent last (pending reply, no action); no `You:` prefix = the prospect sent last (reply owed, draft react-first now). Read `.msg-conversation-listitem` innerText.
 - **Messaging search is unreliable through automation** — it debounces and often returns a false "We didn't find anything" empty state before results render, so "search finds no thread" is NOT proof a thread doesn't exist. Do NOT trust it. To confirm a thread's absence, prefer opening the person's `/in/` profile and checking the Message button / conversation, or reading the fully-loaded inbox. (This is another reason the `/in/` URL standard matters.)
+- **If the messaging pane locks onto one thread** (clicks move the list highlight but not the detail pane), recognize it within 3-4 attempts and switch to the API path above instead of burning retries on the UI.
 - **To find someone's real /in/ slug**, use regular LinkedIn people-search (`/search/results/people/?keywords=Name Company`), which exposes `a[href*="/in/"]` cleanly. Sales Nav search hides the lead link behind lazy rendering — avoid it for extraction.
 
 ---
@@ -240,14 +249,13 @@ rows. A shallow pass that "spot checks" is a violation. The steps below are not 
      Date of Last Touch = today, draft Step 2 in your voice (react-first if they messaged).
      `2nd`/`3rd+` = still pending or declined; if the invite is gone from pending, FLAG it for
      review, never re-invite (the Laws).
-3. **Every Connected row: read the actual thread.** For EACH `Connected` row, open the messaging
-   thread (via their `/in/` profile or the inbox). If your Step 2 is ALREADY in the thread as sent
+3. **Every Connected row: read the actual thread — via the Voyager API first (see "Reliable LinkedIn reality checks").** For EACH `Connected` row, read the messaging thread through the `messengerMessages` API using the conversationUrn from your inbox enumeration (fall back to opening their `/in/` profile only if the API path failed this run). If your Step 2 is ALREADY in the thread as sent
    by you, the row is stale -> advance it to `Msg 1 Sent` (Date of Last Touch = the real send date)
    and do NOT re-draft Step 2. Only rows with no Step 2 in the thread are truly "draft Step 2 now."
    Never trust the Sheet's stage over the actual thread. (Do NOT rely on messaging search to prove
-   thread absence — it returns false empties. Open the profile.)
-4. **Full inbox sweep.** Read the inbox top to bottom. Any thread whose LAST message is from the
-   PROSPECT (not "You:") is an unanswered reply that needs a react-first next message drafted now.
+   thread absence — it returns false empties. Use the API map, or open the profile.)
+4. **Full inbox sweep — enumerate the whole inbox via the `messengerConversations` cursor loop (API-first).** This reaches every conversation, not just the ~20 the UI renders. Any thread whose LAST message is from the
+   PROSPECT (sender URN ≠ your own profile URN) is an unanswered reply that needs a react-first next message drafted now.
    Threads where you sent last are awaiting their reply, no action.
 5. **Withdraw check.** Any `Connection Sent` row whose Date of Last Touch is 14+ days old gets
    flagged for a withdraw (your hands).
@@ -275,5 +283,6 @@ Dashboard view: connection rate (accepted / invited), reply rate, booked, active
 ---
 
 ## Changelog
+- **8/12/2026 — API-first LinkedIn reads.** Made the Voyager messaging API (`messengerConversations` cursor loop for the full inbox + `messengerMessages` per thread, with the `(`→`%28` `)`→`%29` URN encoding fix and sender-URN direction check) the PRIMARY method for the inbox sweep and every Connected-thread read, with the old scroll/click UI methods demoted to fallback. Fixes the recurring messaging-pane lock that blocked ~23 thread reads in one run and reaches the whole inbox instead of the ~20 the UI renders. Harvest queryId hashes fresh each run (they rotate) via network capture or `performance.getEntriesByType('resource')`; never hardcode another rep's mailbox URN.
 - 7/19/2026 — Static dashboard replaced by the live two-way board (assets/QWB_Pipeline_Board_v3.html) + per-rep Web App bridge (assets/QWB_Board_WebApp.gs); added Board Sub-Status column, the mass-repair/dedupe recipe, the subagent-hunt pattern, and the rotating connect-note shape.
 - **7/18/2026 — /in/ match-key standard + integrity/dedupe guards.** Locked the `/in/` profile URL as the mandatory match key (Sales Nav URLs banned — they 404, hide from automation, and their hand-shortened placeholders append duplicates). Added the URL-integrity check, the Dedupe Guard, the broken-URL repair procedure (resolve via regular LinkedIn people-search, land via append+delete), the never-reconstruct-from-truncated-reads rule, and the automation notes on the invite-list/inbox 20-item cap and the unreliable messaging search.
